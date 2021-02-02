@@ -7,7 +7,9 @@ var isMobile = ww < 500;
 var ww2 = ww * 0.5, wh2 = wh * 0.5;
 
 /**For Success Failure Display */
-var gameState = "play";
+var gameState = "wait";
+var startElt = document.getElementsByClassName("start")[0];
+startElt.style.display = "none";
 var winElt = document.getElementsByClassName("win")[0];
 winElt.style.display = "none";
 var loseElt = document.getElementsByClassName("lose")[0];
@@ -17,6 +19,8 @@ healthElt.innerText = "HEALTH: 100";
 var scoreElt = document.getElementById("score");
 scoreElt.innerText = "SCORE: 0";
 
+var soundElt = document.getElementsByTagName("audio")[0];
+soundElt.play();
 var NPCpos = {
   x: 0,
   y: 0,
@@ -317,6 +321,18 @@ Tunnel.prototype.updateCurve = function() {
 
 
 Tunnel.prototype.render = function() {
+  if (gameState === "wait"){
+    startElt.style.display = "flex";
+    this.updateCameraPosition();
+
+    // Update the tunnel
+    this.updateCurve();
+
+    this.renderer.render(this.scene, this.camera);
+
+    // Animation loop
+    window.requestAnimationFrame(this.render.bind(this));
+  }
   if (gameState === "play") {
     
     // Update material offset; only if we want the forward movement by default
@@ -543,4 +559,10 @@ function checkTextures() {
 /**Restart game */
 function restartGame() {
   window.location.reload();
+}
+
+function startGame(){
+gameState="play";
+startElt.style.display = "none";
+
 }

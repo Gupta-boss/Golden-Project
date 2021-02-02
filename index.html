@@ -24,6 +24,13 @@
 			</symbol>
 		</svg> -->
 		<main>
+
+			<header class="codrops-header start">
+				<h3 class="codrops-header__title">Navigate through the obstacles without getting hit!!</h3>
+				<button class="codrops-header__info" onclick="startGame()" title="Start Game!" >
+					START GAME!
+				</button>
+			</header>
 			<header class="codrops-header win">
 				<h1 class="codrops-header__title">YOU WON!</h1>
 				<button class="codrops-header__info" onclick="restartGame()" title="Play Again" >
@@ -43,6 +50,11 @@
 				</nav>
 			</header>
 			
+			<audio controls ="none" loop preload="auto" style="display:none">				
+				<source src="./assets/bgSound.mp3" type="audio/mpeg">
+			  Your browser does not support the audio element.
+			  </audio> 
+
 			<div class="content">
 				<!-- The canvas where ThreeJs renders the WebGL -->
 				<canvas id="scene"></canvas>
