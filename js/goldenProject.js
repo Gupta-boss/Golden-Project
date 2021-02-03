@@ -1,7 +1,8 @@
 // Get window dimension
 var ww = document.documentElement.clientWidth || document.body.clientWidth;
 var wh = window.innerHeight;
-var isMobile = ww < 500;
+var isMobile = ww < 850;
+var isPortrait = ww < 380;
 
 // Save half window dimension
 var ww2 = ww * 0.5, wh2 = wh * 0.5;
@@ -17,6 +18,12 @@ loseElt.style.display = "none";
 var healthElt = document.getElementsByTagName("progress")[0];
 healthElt.value = 100;
 var pseudoProgressElt = document.getElementsByTagName("body")[0];
+var mobileButtonsElt = document.getElementsByTagName("footer")[0];
+mobileButtonsElt.style.display = isMobile ? "flex" : "none";
+var mainElt = document.getElementsByTagName("main")[0];
+mainElt.style.display = isPortrait ? "none" : "block";
+var sectionElt = document.getElementsByTagName("section")[0];
+sectionElt.style.display = isPortrait ? "block" : "none";
 
 var scoreElt = document.getElementById("score");
 scoreElt.innerText = "SCORE: 0";
@@ -326,6 +333,13 @@ Tunnel.prototype.updateCurve = function() {
 
 
 Tunnel.prototype.render = function() {
+  isMobile = ww < 850;
+  mobileButtonsElt.style.display = isMobile ? "flex" : "none";
+  isPortrait = ww < 380;
+  mainElt.style.display = isPortrait ? "none" : "block";
+  sectionElt.style.display = isPortrait ? "block" : "none";
+
+
   if (gameState === "wait"){
     startElt.style.display = "flex";
     this.updateCameraPosition();
