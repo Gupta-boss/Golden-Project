@@ -14,13 +14,14 @@ var winElt = document.getElementsByClassName("win")[0];
 winElt.style.display = "none";
 var loseElt = document.getElementsByClassName("lose")[0];
 loseElt.style.display = "none";
-var healthElt = document.getElementById("health");
-healthElt.innerText = "HEALTH: 100";
+var healthElt = document.getElementsByTagName("progress")[0];
+healthElt.value = 100;
+var pseudoProgressElt = document.getElementsByTagName("body")[0];
+
 var scoreElt = document.getElementById("score");
 scoreElt.innerText = "SCORE: 0";
 
 var soundElt = document.getElementsByTagName("audio")[0];
-soundElt.play();
 var NPCpos = {
   x: 0,
   y: 0,
@@ -88,7 +89,8 @@ Tunnel.prototype.init = function() {
 
 
 Tunnel.prototype.addPC = function() {
-  this.PC = new Particle(this.scene, false, 0 , true);
+  this.PC = new Particle(this.scene, false, 0 , "pc");
+  this.diamondParticles = [];
 };
 
 
@@ -96,10 +98,8 @@ Tunnel.prototype.addParticleNPC = function() {
     this.NPCparticles = [];
 
     for(var i = 0; i < (isMobile?10:20); i++){
-      this.NPCparticles.push(new Particle(this.scene, false, 0 , false));
+      this.NPCparticles.push(new Particle(this.scene, false, 0 , "npc"));
     }
-
-    this.NPCparticles.push(this.PC);
 };
 
 
@@ -115,7 +115,7 @@ Tunnel.prototype.createMesh = function() {
    * (0, 0, 0), (0, 0, 0.625), (0, 0, 1.25), (0, 0, 1.875), (0, 0, 2.5)
    */
   // Set custom X and Y position for the last point
-  points[4].x = -0.05;
+  points[4].x = 0.0;
   points[4].y = 0.05;
 
   /**To End game
@@ -199,13 +199,18 @@ Tunnel.prototype.handleEvents = function() {
           this.updateMaterialOffset(0.05,0);
           /**Increasing the distance moved by PC */
           this.PC.player.distance += 1;
+          this.PC.player.score += 1;
+          /**Updte the ring only when we move forward */
+          if (this.finishRing != undefined) {
+            this.finishRing.update(this, "ring");
+          }
         }
 
-        if (event.key == "s" || event.key == "S") {
-            this.updateMaterialOffset(-0.05,0);
-            /**Decreasing the distance moved by PC */
-          this.PC.player.distance -= 1;
-        }
+        // if (event.key == "s" || event.key == "S") {
+        //     this.updateMaterialOffset(-0.05,0);
+        //     /**Decreasing the distance moved by PC */
+        //   this.PC.player.distance -= 1;
+        // }
         if (event.key == "ArrowUp") {
            this.PC.player.y = this.PC.player.y + (0.05)*0.025;
         }
@@ -223,10 +228,10 @@ Tunnel.prototype.handleEvents = function() {
          * Maximum range of movement for X and Y is [-(0.5)*0.025, (0.5)*0.025]
          * If PC moves out of range, bring it back in within range
          */
-        this.PC.player.x = (this.PC.player.x > (0.5)*0.025) ? (0.5)*0.025 : this.PC.player.x;
-        this.PC.player.x = (this.PC.player.x < -(0.5)*0.025) ? -(0.5)*0.025 : this.PC.player.x;
-        this.PC.player.y = (this.PC.player.y > (0.3)*0.025) ? (0.3)*0.025 : this.PC.player.y;
-        this.PC.player.y = (this.PC.player.y < -(0.3)*0.025) ? -(0.3)*0.025 : this.PC.player.y;
+        this.PC.player.x = (this.PC.player.x > (0.55)*0.025) ? (0.55)*0.025 : this.PC.player.x;
+        this.PC.player.x = (this.PC.player.x < -(0.55)*0.025) ? -(0.55)*0.025 : this.PC.player.x;
+        this.PC.player.y = (this.PC.player.y > (0.35)*0.025) ? (0.35)*0.025 : this.PC.player.y;
+        this.PC.player.y = (this.PC.player.y < -(0.35)*0.025) ? -(0.35)*0.025 : this.PC.player.y;
         
         this.PC.offset = new THREE.Vector3(this.PC.player.x, this.PC.player.y, 0);
 
@@ -334,7 +339,6 @@ Tunnel.prototype.render = function() {
     window.requestAnimationFrame(this.render.bind(this));
   }
   if (gameState === "play") {
-    
     // Update material offset; only if we want the forward movement by default
     // this.updateMaterialOffset();
 
@@ -346,57 +350,103 @@ Tunnel.prototype.render = function() {
 
     // Update the particles
     PCpos = {
-      x: Math.round(this.PC.pos.x * 100),
-      y: Math.round(this.PC.pos.y * 100),
-      z: Math.round(this.PC.pos.z * 100)
+      x: Math.round(this.PC.pos.x * 125),
+      y: Math.round(this.PC.pos.y * 125),
+      z: Math.round(this.PC.pos.z * 125)
     }
     
     for(var i = 0; i < this.NPCparticles.length; i++){
       /**The last item in NPCparticles array is the PC */
-      if (i=== (this.NPCparticles.length-1)) {
-        /**2nd argument is true only for PC */
-        this.NPCparticles[i].update(this, true);
-      } else {
+      
         /**For NPC particles */
-        this.NPCparticles[i].update(this, false);
+        this.NPCparticles[i].update(this, "npc");
         /**Check if NPC is colliding with PC */
         /**Compare particle.pos values for PC and NPCs */
         NPCpos = {
-          x: Math.round(this.NPCparticles[i].pos.x * 100),
-          y: Math.round(this.NPCparticles[i].pos.y * 100),
-          z: Math.round(this.NPCparticles[i].pos.z * 100)
+          x: Math.round(this.NPCparticles[i].pos.x * 125),
+          y: Math.round(this.NPCparticles[i].pos.y * 125),
+          z: Math.round(this.NPCparticles[i].pos.z * 125)
         }
 
         if (PCpos.x == NPCpos.x && 
             PCpos.y == NPCpos.y && 
             PCpos.z == NPCpos.z ) {
-              console.log("HIT !!");
               this.PC.player.health = this.PC.player.health-10  ;
+              /**Remove hit particles */
+              this.NPCparticles[i].percent = 1.1;
+              this.NPCparticles[i].update(this, "npc", "collided");
+              this.NPCparticles.splice(i, 1);
+              i--;
         }
-      }
-
-      if(this.NPCparticles[i].burst && this.NPCparticles[i].percent > 1){
-        this.NPCparticles.splice(i, 1);
-        i--;
-      }
+    
+      // if(this.NPCparticles[i].burst && this.NPCparticles[i].percent > 1){
+      //   this.NPCparticles.splice(i, 1);
+      //   i--;
+      // }
     }
 
-    
+    if (this.PC != undefined) {
+      this.PC.update(this, "pc");
+    }
 
+    if ((this.PC.player.distance > 100) && (this.diamondParticles.length == 0)) {
+      this.diamondParticles.push(new Particle(this.scene, false, 0 , "diamond"));
+      setTimeout(()=> {
+        this.diamondParticles.push(new Particle(this.scene, false, 0 , "diamond"));
+      }, 1000)
+      setTimeout(()=> {
+        this.diamondParticles.push(new Particle(this.scene, false, 0 , "diamond"));
+      }, 2000)
+    }
 
+    /**Update diamond Particles */
+    for(var i = 0; i < this.diamondParticles.length; i++) {
+      
+      this.diamondParticles[i].update(this, "diamond");
+      /**Check if NPC is colliding with PC
+       * Compare particle.pos values for PC and NPCs
+       */
+      NPCpos = {
+        x: Math.round(this.diamondParticles[i].pos.x * 125),
+        y: Math.round(this.diamondParticles[i].pos.y * 125),
+        z: Math.round(this.diamondParticles[i].pos.z * 125)
+      }
+
+      if ((PCpos.x == NPCpos.x) && (PCpos.y == NPCpos.y) && (PCpos.z == NPCpos.z) ) {
+            
+        this.PC.player.score = this.PC.player.score + 30  ;
+        /**Remove hit particles */
+        this.diamondParticles[i].percent = 1.1;
+        this.diamondParticles[i].update(this, "diamond", "collided");
+        this.diamondParticles.splice(i, 1);
+        i--;
+      } 
+  
+      // if(this.diamondParticles[i].burst && this.diamondParticles[i].percent > 1){
+      //   this.diamondParticles.splice(i, 1);
+      //   i--;
+      // }
+    }
     
-   
+    if ((this.PC.player.score > 300) && (this.finishRing == undefined)) {
+      this.finishRing = new Particle(this.scene, false, 0 , "ring");
+    }
     /**Measure PC distance and health to show Success/Failure message */
-    if (this.PC.player.distance >= 100) {
+    if (this.finishRing && this.finishRing.percent > 0.85) {
       gameState = "win";
-    } else if (this.PC.player.health < 0) {
+    } else if (this.PC.player.health <= 0) {
       gameState = "lose";
     }
 
      /**Update score and health */
-     healthElt.innerText = "HEALTH: " + this.PC.player.health;
-     scoreElt.innerText = "SCORE: "+ this.PC.player.distance;
-  
+     scoreElt.innerText = "SCORE: " + this.PC.player.score;
+     healthElt.value = this.PC.player.health;
+    /**Change progress bar color from green to red, indicating remaining health */
+     pseudoProgressElt.style.setProperty("--health-bar-color", this.PC.player.health); 
+     /**Make flat edge on right side when health <100 */ 
+     if (this.PC.player.health < 100) {
+      pseudoProgressElt.style.setProperty("--health-bar-radius", "1em 0 0 1em");  
+     }
     // render the scene
     this.renderer.render(this.scene, this.camera);
 
@@ -415,120 +465,179 @@ Tunnel.prototype.render = function() {
 
 
 
-function Particle(scene, burst, time, isPC = false) {
-    var radius = Math.random()*0.002 + 0.0003;
-    var geom = this.sphere;
-    /**Only if we want the obstales to have different geometries */
-    // var random = Math.random();
-    // if(random > 0.9){
-    //   geom = this.cube;
-    // } else if(random > 0.5){
-    //   geom = this.icosahedron;
-    // }
+function Particle(scene, burst, time, particleType = "npc") {
+  var geom = this.icosahedron;
+  /**Only if we want the obstales to have different geometries */
+  // var random = Math.random();
+  // if(random > 0.9){
+  //   geom = this.cube;
+  // } else if(random > 0.5){
+  //   geom = this.icosahedron;
+  // }
 
-    if (isPC) {
-      /**
-       * player object: exists only for PC Particle
-       * x,y,z will be the position points of PC
-       * distance: distance moved forward/backward by PC
-       * health: shows health of PC
-       */
-      this.player = {
-        x:0,
-        y:0,
-        z:0,
-        distance:0,
-        health: 100
-      }
+  if (particleType == "pc") {
+    /**
+     * player object: exists only for PC Particle
+     * x,y,z will be the position points of PC
+     * distance: distance moved forward/backward by PC
+     * health: shows health of PC
+     */
+    this.player = {
+      x:0,
+      y:0,
+      z:0,
+      distance:0,
+      score: 0,
+      health: 100
     }
+  }
 
-    var range = 50;
-    if(burst){
-      this.color = new THREE.Color("hsl("+(time / 50)+",100%,60%)");
-    } 
-    if (isPC) {
-      /**PC particle will have cube geometry and red colour */
-      geom = this.cube;
-      this.color = new THREE.Color("hsl(0, 50%, 50%)"); // red colour for PC
-    } else {
-      var offset = 180;
-      this.color = new THREE.Color("hsl("+(Math.random()*range+offset)+",100%,80%)");
-    }
+  var range = 50;
+  if(burst){
+    this.color = new THREE.Color("hsl("+(time / 50)+",100%,60%)");
+  } 
+  if (particleType == "pc") {
+    /**PC particle will have sphere geometry*/
+    geom = this.sphere;
+    var offset = 180;
+    this.color = new THREE.Color("hsl("+(Math.random()*range+offset)+",100%,80%)");
+  } else if (particleType == "ring") {
+    geom = this.ring;
+    this.color = new THREE.Color("hsl(50, 100%, 60%)"); // yellow colour for PC
+  } else if (particleType == "diamond") {
+    geom = this.diamond;
+    this.color = new THREE.Color("hsl(190, 100%, 65%)"); // diamond colour
+  } else {
+    var offset = 0;
+    this.color = new THREE.Color("hsl("+(Math.random()*15+offset)+",50%, 30%)");
+    // this.color = new THREE.Color("hsl(15, 100%, 65%)"); // red colour for particles
+  }
 
-    
-
-    var mat = new THREE.MeshPhongMaterial({
+  
+  var mat;
+  if (particleType == "pc") {
+    /**To change pattern, change the image under textures.bluePattern */
+    mat = new THREE.MeshPhongMaterial({
       color: this.color,
-      shading:THREE.FlatShading
+      shading:THREE.FlatShading,
+      map: textures.bluePattern.texture,
     });
-    this.mesh = new THREE.Mesh(geom, mat);
-    this.mesh.scale.set(radius, radius, radius);
-    this.mesh.position.set(0,0,1.5);
+    mat.map.wrapS = THREE.RepeatWrapping;
+    mat.map.wrapT = THREE.RepeatWrapping;
+    mat.map.repeat.set(1,1);
+  
+  } else if (particleType == "diamond"){
+    mat = new THREE.MeshPhysicalMaterial({
+      color: this.color,
+      shading:THREE.FlatShading,
+      reflectivity: 1,
+      transmission: 0.5,
+      opacity: 0.5
+    });
+  } else if (particleType == "ring"){
+    mat = new THREE.MeshPhysicalMaterial({
+      color: this.color,
+      wireframe: true
+      // shading:THREE.FlatShading
+    });
+  } else {
+    mat = new THREE.MeshPhongMaterial({
+      color: this.color,
+      shading:THREE.FlatShading,
+    });
+  }
+  this.mesh = new THREE.Mesh(geom, mat);
 
-    this.percent = burst ? 0.2 : Math.random();
-    this.burst = burst ? true : false;
+  var radius = (particleType=="npc" ) ? (Math.random()*0.002 + 0.0003) : (0.0023);
+  this.mesh.scale.set(radius, radius, radius);
+  this.mesh.position.set(0,0,1.5);
 
-    if (isPC) {
-      /* x,y values range : [-0.5*0.025, 0.5*0.025] */
-      this.offset = new THREE.Vector3(this.player.x, this.player.y, 0);  
-    } else {
-      this.offset = new THREE.Vector3((Math.random()-0.5)*0.025, (Math.random()-0.5)*0.025, 0);
-    }
-    this.speed = Math.random()*0.004 + 0.0002;
+  // this.percent = burst ? 0.2 : ((particleType == "npc") ? Math.random() : 0.5);
+  this.percent = burst ? 0.2 :  0.5;
+  this.burst = burst ? true : false;
+
+  if (particleType == "pc") {
+    /* x,y values range : [-0.5*0.025, 0.5*0.025] */
+    this.offset = new THREE.Vector3(this.player.x, this.player.y, 0);  
+  } else if (particleType == "ring") {
+    this.offset = new THREE.Vector3(0, 0, 0);
+  } else {
+    /**For NPC and Diamonds */
+    this.offset = new THREE.Vector3((Math.random()-0.5)*0.025, (Math.random()-0.5)*0.025, 0);
+  }
+
+  if (particleType == "ring" ) {
+    this.rotate = new THREE.Vector3(0,0,0);
+    this.speed = (0.5)*0.004 + 0.0002;
+  } else {
     this.rotate = new THREE.Vector3(-Math.random()*0.1+0.01,0,Math.random()*0.01);
+    this.speed = Math.random()*0.004 + 0.0002;
 
-    if (this.burst){
-      this.speed += 0.003;
-      this.mesh.scale.x *= 1.4;
-      this.mesh.scale.y *= 1.4;
-      this.mesh.scale.z *= 1.4;
-    }
-    
-    this.pos = new THREE.Vector3(0,0,0);
+  }
 
-    scene.add(this.mesh);
+  if (this.burst){
+    this.speed += 0.003;
+    this.mesh.scale.x *= 1.4;
+    this.mesh.scale.y *= 1.4;
+    this.mesh.scale.z *= 1.4;
   }
   
-  Particle.prototype.cube = new THREE.BoxBufferGeometry(1, 1, 1);
-  Particle.prototype.sphere = new THREE.SphereBufferGeometry(2, 6, 6 );
-  Particle.prototype.icosahedron = new THREE.IcosahedronBufferGeometry(2,0);
+  this.pos = new THREE.Vector3(0,0,0);
+
+  scene.add(this.mesh);
+}
+
+Particle.prototype.cube = new THREE.BoxBufferGeometry(1.2, 1.2, 1.2);
+Particle.prototype.sphere = new THREE.SphereBufferGeometry(1.2, 15, 15 );
+Particle.prototype.icosahedron = new THREE.IcosahedronBufferGeometry(1.5,0);
+Particle.prototype.diamond = new THREE.OctahedronGeometry( 1.5, 0 )
+Particle.prototype.ring = new THREE.TorusGeometry( 6, 2, 8, 30 )
 
 
-  Particle.prototype.update = function (tunnel, isPC=false) {
-    if (isPC) {
-      /**To change the PC's distance from camera */
-      this.percent = 0.835;
-    } else {
-      this.percent += this.speed * (this.burst?2:1);
-    }
+Particle.prototype.update = function (tunnel, particleType = "npc", action = "normal") {
+  if (particleType == "pc") {
+    /**To change the PC's distance from camera */
+    this.percent = 0.83;
+  } else if (action == "collided"){
+    this.percent = 1.1;
+  } else {
+    this.percent += this.speed * (this.burst?2:1);
+  }
 
-    /**
-     * this.offset : moves particles away from center ; remove offset and particles remain at center of screen
-     * this.percent : gives movement towards camera; give 0.75 instead of this.percent to have static particles
-     */
-    this.pos = tunnel.curve.getPoint(1 - (this.percent%1)) .add(this.offset);
-    
-    /**To keep updating the position of all Particles */
-    this.mesh.position.x = this.pos.x;
-    this.mesh.position.y = this.pos.y;
-    this.mesh.position.z = this.pos.z;
-    /**To keep updating the rotation of all Particles */
-    this.mesh.rotation.x += this.rotate.x;
-    this.mesh.rotation.y += this.rotate.y;
-    this.mesh.rotation.z += this.rotate.z;
-  };
+  /**
+   * this.offset : moves particles away from center ; remove offset and particles remain at center of screen
+   * this.percent : gives movement towards camera; give 0.75 instead of this.percent to have static particles
+   */
+  this.pos = tunnel.curve.getPoint(1 - (this.percent%1)) .add(this.offset);
+  
+  /**To keep updating the position of all Particles */
+  this.mesh.position.x = this.pos.x;
+  this.mesh.position.y = this.pos.y;
+  this.mesh.position.z = this.pos.z;
+  /**To keep updating the rotation of all Particles */
+  this.mesh.rotation.x += this.rotate.x;
+  this.mesh.rotation.y += this.rotate.y;
+  this.mesh.rotation.z += this.rotate.z;
+};
 
 
 
 // All needed textures
 var textures = {
   "stone": {
-    url: "img/demo1/stonePattern.jpg"
+    url: "img/stonePattern.jpg"
   },
   "stoneBump": {
-    url: "img/demo1/stonePatternBump.jpg"
+    url: "img/stonePatternBump.jpg"
+  },
+  "bluePattern": {
+    url: "img/bluePattern.jpg"
+  },
+  "robot": {
+    url: "img/robot.png"
   }
 };
+
 
 // Create a new loader
 var loader = new THREE.TextureLoader();
@@ -562,7 +671,7 @@ function restartGame() {
 }
 
 function startGame(){
-gameState="play";
-startElt.style.display = "none";
-
+  gameState="play";
+  startElt.style.display = "none";
+  soundElt.play();
 }
