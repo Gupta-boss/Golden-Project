@@ -37,7 +37,7 @@
 				<nav class="demos">
 					<p class="demo" id="score">SCORE: 0</p>
 					<div class="health-bar">
-						<progress max="100" value="70"></progress>
+						<progress max="100" value="100"></progress>
 					</div>
 				</nav>
 			</header>
@@ -54,13 +54,42 @@
 
 			<footer>
 				<div class="forward">
-					<button>GO</button>
+					<button 
+					ontouchstart="move('forward', true)" 
+					ontouchend="move('forward', false)"
+					ontouchcancel="move('forward', false)">
+						GO
+					</button>
 				</div>
 				<div class="position-change">
-					<button class="up">UP</button>
-					<button class="left">LEFT</button>
-					<button class="right">RIGHT</button>
-					<button class="down">DOWN</button>
+					<button 
+					ontouchstart="move('up', true)" 
+					ontouchend="move('up', false)"
+					ontouchcancel="move('up', false)" 
+					class="up">
+						UP
+					</button>
+					<button 
+					ontouchstart="move('left', true)" 
+					ontouchend="move('left', false)" 
+					ontouchcancel="move('left', false)" 
+					class="left">
+						LEFT
+					</button>
+					<button 
+					ontouchstart="move('right', true)" 
+					ontouchend="move('right', false)" 
+					ontouchcancel="move('right', false)" 
+					class="right">
+						RIGHT
+					</button>
+					<button 
+					ontouchstart="move('down', true)" 
+					ontouchend="move('down', false)" 
+					ontouchcancel="move('down', false)" 
+					class="down">
+						DOWN
+					</button>
 				</div>
 			</footer>
 		</main>
@@ -72,7 +101,6 @@
 
 		</section>
 		<script src="js/vendors/three.min.js"></script>
-		<!-- <script src="js/demo1.js"></script> -->
 		<script src="js/goldenProject.js"></script>
 	</body>
 </html>

@@ -40,6 +40,14 @@ var PCpos = {
   z: 0
 } 
 
+/**Boolean variables to check if PC should move on button press */
+var moveForward = false;
+var moveUp = false;
+var moveLeft = false;
+var moveRight = false;
+var moveDown = false;
+
+
 // Constructor function
 function Tunnel() {
   // Init the scene and the
@@ -104,7 +112,7 @@ Tunnel.prototype.addPC = function() {
 Tunnel.prototype.addParticleNPC = function() {
     this.NPCparticles = [];
 
-    for(var i = 0; i < (isMobile?10:20); i++){
+    for(var i = 0; i < (isMobile?15:30); i++){
       this.NPCparticles.push(new Particle(this.scene, false, 0 , "npc"));
     }
 };
@@ -123,7 +131,7 @@ Tunnel.prototype.createMesh = function() {
    */
   // Set custom X and Y position for the last point
   points[4].x = 0.0;
-  points[4].y = 0.05;
+  points[4].y = 0.03;
 
   /**To End game
    * points[4].y = 0; // downward curd could be straightened up
@@ -196,53 +204,52 @@ Tunnel.prototype.handleEvents = function() {
 
         /**
          * W key: Move forward
-         * S key: Move back
          * Up Arrow: Move Up
          * Down Arrow: Move Down
          * Left Arrow: Move Left
          * Right Arrow: Move Right
          */
-        if (event.key == "w" || event.key == "W") {
-          this.updateMaterialOffset(0.05,0);
-          /**Increasing the distance moved by PC */
-          this.PC.player.distance += 1;
-          this.PC.player.score += 1;
-          /**Updte the ring only when we move forward */
-          if (this.finishRing != undefined) {
-            this.finishRing.update(this, "ring");
-          }
+        switch(event.key) {
+          case 'w' || 'W': 
+            moveForward = true;
+            break;
+          case 'ArrowUp': 
+            moveUp = true;
+            break;
+          case 'ArrowLeft': 
+            moveLeft = true;
+            break;
+          case 'ArrowRight': 
+            moveRight = true;
+            break;
+          case 'ArrowDown': 
+            moveDown = true;
+            break;
         }
-
-        // if (event.key == "s" || event.key == "S") {
-        //     this.updateMaterialOffset(-0.05,0);
-        //     /**Decreasing the distance moved by PC */
-        //   this.PC.player.distance -= 1;
-        // }
-        if (event.key == "ArrowUp") {
-           this.PC.player.y = this.PC.player.y + (0.05)*0.025;
-        }
-
-        if (event.key == "ArrowDown") {
-           this.PC.player.y = this.PC.player.y - (0.05)*0.025;
-        }
-        if (event.key == "ArrowLeft") {
-            this.PC.player.x = this.PC.player.x + (0.05)*0.025;
-        }
-        if (event.key == "ArrowRight") {
-            this.PC.player.x = this.PC.player.x - (0.05)*0.025;
-        }
-        /**
-         * Maximum range of movement for X and Y is [-(0.5)*0.025, (0.5)*0.025]
-         * If PC moves out of range, bring it back in within range
-         */
-        this.PC.player.x = (this.PC.player.x > (0.55)*0.025) ? (0.55)*0.025 : this.PC.player.x;
-        this.PC.player.x = (this.PC.player.x < -(0.55)*0.025) ? -(0.55)*0.025 : this.PC.player.x;
-        this.PC.player.y = (this.PC.player.y > (0.35)*0.025) ? (0.35)*0.025 : this.PC.player.y;
-        this.PC.player.y = (this.PC.player.y < -(0.35)*0.025) ? -(0.35)*0.025 : this.PC.player.y;
-        
-        this.PC.offset = new THREE.Vector3(this.PC.player.x, this.PC.player.y, 0);
 
     })
+
+    document.body.addEventListener("keyup", (event)=> {
+
+     
+      switch(event.key) {
+        case 'w' || 'W': 
+          moveForward = false;
+          break;
+        case 'ArrowUp': 
+          moveUp = false;
+          break;
+        case 'ArrowLeft': 
+          moveLeft = false;
+          break;
+        case 'ArrowRight': 
+          moveRight = false;
+          break;
+        case 'ArrowDown': 
+          moveDown = false;
+          break;
+      }
+  })
 };
 
 
@@ -356,6 +363,9 @@ Tunnel.prototype.render = function() {
     // Update material offset; only if we want the forward movement by default
     // this.updateMaterialOffset();
 
+    /**PC movement*/
+    this.movePc();
+
     // Update camera position & rotation
     this.updateCameraPosition();
 
@@ -387,7 +397,7 @@ Tunnel.prototype.render = function() {
             PCpos.z == NPCpos.z ) {
               this.PC.player.health = this.PC.player.health-10  ;
               /**Remove hit particles */
-              this.NPCparticles[i].percent = 1.1;
+              this.NPCparticles[i].percent = 1;
               this.NPCparticles[i].update(this, "npc", "collided");
               this.NPCparticles.splice(i, 1);
               i--;
@@ -407,10 +417,10 @@ Tunnel.prototype.render = function() {
       this.diamondParticles.push(new Particle(this.scene, false, 0 , "diamond"));
       setTimeout(()=> {
         this.diamondParticles.push(new Particle(this.scene, false, 0 , "diamond"));
-      }, 1000)
+      }, 2000);
       setTimeout(()=> {
         this.diamondParticles.push(new Particle(this.scene, false, 0 , "diamond"));
-      }, 2000)
+      }, 4000);
     }
 
     /**Update diamond Particles */
@@ -428,13 +438,19 @@ Tunnel.prototype.render = function() {
 
       if ((PCpos.x == NPCpos.x) && (PCpos.y == NPCpos.y) && (PCpos.z == NPCpos.z) ) {
             
-        this.PC.player.score = this.PC.player.score + 30  ;
+        this.PC.player.score = this.PC.player.score + 100  ;
         /**Remove hit particles */
-        this.diamondParticles[i].percent = 1.1;
+        this.diamondParticles[i].percent = 1;
         this.diamondParticles[i].update(this, "diamond", "collided");
         this.diamondParticles.splice(i, 1);
         i--;
-      } 
+      } else if (this.diamondParticles[i].percent > 0.9
+        && this.diamondParticles[i].percent < 1) {
+        this.diamondParticles[i].percent = 0;
+        /**Randomize their position before they come in for the 2nd round */
+        this.diamondParticles[i].offset = new THREE.Vector3((Math.random()-0.5)*0.025, (Math.random()-0.5)*0.025, 0);
+        this.diamondParticles[i].update(this, "diamond");
+      }
   
       // if(this.diamondParticles[i].burst && this.diamondParticles[i].percent > 1){
       //   this.diamondParticles.splice(i, 1);
@@ -442,7 +458,7 @@ Tunnel.prototype.render = function() {
       // }
     }
     
-    if ((this.PC.player.score > 300) && (this.finishRing == undefined)) {
+    if ((this.PC.player.distance > 1000) && (this.finishRing == undefined)) {
       this.finishRing = new Particle(this.scene, false, 0 , "ring");
     }
     /**Measure PC distance and health to show Success/Failure message */
@@ -476,6 +492,50 @@ Tunnel.prototype.render = function() {
   }
   
 };
+
+
+/**Method to move PC */
+Tunnel.prototype.movePc = function() {
+
+  if (moveForward) {
+    this.updateMaterialOffset(0.03,0);
+    /**Increasing the distance moved by PC */
+    this.PC.player.distance += 1;
+    // this.PC.player.score += 1;
+    /**Updte the ring only when we move forward */
+    if (this.finishRing != undefined) {
+      this.finishRing.update(this, "ring");
+    }
+  }
+
+  if (moveUp) {
+     this.PC.player.y = this.PC.player.y + (0.02)*0.025;
+  }
+
+  if (moveDown) {
+     this.PC.player.y = this.PC.player.y - (0.02)*0.025;
+  }
+  if (moveLeft) {
+      this.PC.player.x = this.PC.player.x + (0.02)*0.025;
+  }
+  if (moveRight) {
+      this.PC.player.x = this.PC.player.x - (0.02)*0.025;
+  }
+  /**
+   * Maximum range of movement for X and Y is [-(0.5)*0.025, (0.5)*0.025]
+   * If PC moves out of range, bring it back in within range
+   */
+  if (moveForward || moveUp || moveDown || moveLeft || moveRight) {
+
+    this.PC.player.x = (this.PC.player.x > (0.55)*0.025) ? (0.55)*0.025 : this.PC.player.x;
+    this.PC.player.x = (this.PC.player.x < -(0.55)*0.025) ? -(0.55)*0.025 : this.PC.player.x;
+    this.PC.player.y = (this.PC.player.y > (0.35)*0.025) ? (0.35)*0.025 : this.PC.player.y;
+    this.PC.player.y = (this.PC.player.y < -(0.35)*0.025) ? -(0.35)*0.025 : this.PC.player.y;
+    
+    this.PC.offset = new THREE.Vector3(this.PC.player.x, this.PC.player.y, 0);
+    
+  }
+}
 
 
 
@@ -544,9 +604,7 @@ function Particle(scene, burst, time, particleType = "npc") {
     mat = new THREE.MeshPhysicalMaterial({
       color: this.color,
       shading:THREE.FlatShading,
-      reflectivity: 1,
-      transmission: 0.5,
-      opacity: 0.5
+      reflectivity: 1
     });
   } else if (particleType == "ring"){
     mat = new THREE.MeshPhysicalMaterial({
@@ -566,26 +624,29 @@ function Particle(scene, burst, time, particleType = "npc") {
   this.mesh.scale.set(radius, radius, radius);
   this.mesh.position.set(0,0,1.5);
 
-  // this.percent = burst ? 0.2 : ((particleType == "npc") ? Math.random() : 0.5);
-  this.percent = burst ? 0.2 :  0.5;
+  this.percent = burst ? 0.2 : ((particleType == "npc") ? Math.random() : 0.2);
   this.burst = burst ? true : false;
 
   if (particleType == "pc") {
-    /* x,y values range : [-0.5*0.025, 0.5*0.025] */
+    /* x range : [-0.55*0.025,+0.55*0.025] 
+       y range: [-0.35*0.025, +0.35*0.025] */
     this.offset = new THREE.Vector3(this.player.x, this.player.y, 0);  
   } else if (particleType == "ring") {
+    /* x,y values range : [0, 0] */
     this.offset = new THREE.Vector3(0, 0, 0);
   } else {
-    /**For NPC and Diamonds */
+    /**For NPC and diamonds*/
+    /* x range : [-0.5*0.025,+0.5*0.025] 
+       y range: [-0.5*0.025, +0.5*0.025] */
     this.offset = new THREE.Vector3((Math.random()-0.5)*0.025, (Math.random()-0.5)*0.025, 0);
   }
 
   if (particleType == "ring" ) {
     this.rotate = new THREE.Vector3(0,0,0);
-    this.speed = (0.5)*0.004 + 0.0002;
+    this.speed = (0.3)*0.004 + 0.0002; // equals to 0.0012
   } else {
     this.rotate = new THREE.Vector3(-Math.random()*0.1+0.01,0,Math.random()*0.01);
-    this.speed = Math.random()*0.004 + 0.0002;
+    this.speed = Math.random()*0.004 + 0.0012;
 
   }
 
@@ -613,7 +674,7 @@ Particle.prototype.update = function (tunnel, particleType = "npc", action = "no
     /**To change the PC's distance from camera */
     this.percent = 0.83;
   } else if (action == "collided"){
-    this.percent = 1.1;
+    this.percent = 1;
   } else {
     this.percent += this.speed * (this.burst?2:1);
   }
@@ -688,4 +749,24 @@ function startGame(){
   gameState="play";
   startElt.style.display = "none";
   soundElt.play();
+}
+
+function move(direction, bool) {
+  switch(direction) {
+    case 'forward': 
+      moveForward = bool;
+      break;
+    case 'up': 
+      moveUp = bool;
+      break;
+    case 'left': 
+      moveLeft = bool;
+      break;
+    case 'right': 
+      moveRight = bool;
+      break;
+    case 'down': 
+      moveDown = bool;
+      break;
+  }
 }
