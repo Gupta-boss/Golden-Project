@@ -341,7 +341,7 @@ Tunnel.prototype.render = function() {
   isMobile = ww < 850;
   mobileButtonsElt.style.display = isMobile ? "flex" : "none";
   isPortrait = ww < 380;
-  mainElt.style.display = isPortrait ? "none" : "block";
+  mainElt.style.display = isPortrait ? "block" : "block";
   sectionElt.style.display = isPortrait ? "block" : "none";
 
 
