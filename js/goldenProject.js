@@ -238,8 +238,6 @@ Tunnel.prototype.handleEvents = function() {
     })
 };
 
-
-
 Tunnel.prototype.onResize = function() {
   // On resize, get new width & height of window
   ww = document.documentElement.clientWidth || document.body.clientWidth;
