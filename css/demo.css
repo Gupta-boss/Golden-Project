@@ -96,6 +96,7 @@ a:focus {
 /* Header */
 .codrops-header {
 	position: absolute;
+	top: 25%;
 	display: flex;
 	flex-direction: row;
 	flex-wrap: wrap;
@@ -105,7 +106,7 @@ a:focus {
 	/*Changes for Win,Lose, Restart Messages*/
 	flex-direction: column;
 	justify-content: flex-end;
-	height: 50%;
+	height: 40%;
 }
 
 .codrops-header__title {
@@ -215,6 +216,43 @@ progress::-webkit-progress-value {
 	padding: 0;
 }
 
+footer {
+	position: absolute;
+	bottom: 5%;
+	width: 100%;
+	padding: 3%;
+	display: flex;
+	flex-flow: row wrap;
+	justify-content: space-between;
+}
+
+.forward button {
+	width: 4em;
+	margin-top: 5px;
+	border-radius: 0.5em;
+}
+
+.position-change button{
+	margin: auto;
+	display: block;
+	width: 4em;
+	margin-top: 5px;
+	border-radius: 0.5em;
+}
+.position-change .left{
+	display: inline-block;
+}
+.position-change .right{
+	display: inline-block;
+}
+
+.portrait {
+	text-align: center;
+	background-color: #fff;
+	height: 100%;
+	color: black;
+}
+
 #scene.clickable{
 	cursor: pointer;
 }
@@ -252,8 +290,8 @@ progress::-webkit-progress-value {
 
 @media screen and (max-width: 60em) {
 	.codrops-header {
-		flex-direction: column;
-		align-items: flex-start;
+		/* flex-direction: column; */
+		/* align-items: flex-start; */
 		font-size: 0.85em;
 	}
 	.in-game-header {
